@@ -36,7 +36,12 @@ jobs:
           echo "SUBJECT=Author update from Stephen Coodie" >> $GITHUB_ENV
           echo "MESSAGE_FILE=content/scheduled/post1.md" >> $GITHUB_ENV
       - name: Send Email (SMTP dry-run)
-        if: secrets.SMTP_HOST != ''
+        if: secrets.SMTP_HOST != '' && secrets.REAL_SEND != 'true'
         env:
           DRY_RUN: '1'
+        run: python scripts/send_email.py
+      - name: Send Email (SMTP real send)
+        if: secrets.SMTP_HOST != '' && secrets.REAL_SEND == 'true'
+        env:
+          DRY_RUN: '0'
         run: python scripts/send_email.py
