@@ -1,0 +1,42 @@
+name: Scheduled Promotion Runner
+
+on:
+  schedule:
+    - cron: '0 09 * * *' # daily at 09:00 UTC
+  workflow_dispatch:
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Run Mastodon post
+        if: secrets.MASTODON_TOKEN != ''
+        env:
+          MASTODON_BASE_URL: ${{ secrets.MASTODON_BASE_URL }}
+          MASTODON_TOKEN: ${{ secrets.MASTODON_TOKEN }}
+          MESSAGE_FILE: content/scheduled/post1.md
+        run: python scripts/post_mastodon.py
+      - name: Prepare SMTP env
+        if: secrets.SMTP_HOST != ''
+        run: |
+          echo "SMTP_HOST=${{ secrets.SMTP_HOST }}" >> $GITHUB_ENV
+          echo "SMTP_PORT=${{ secrets.SMTP_PORT }}" >> $GITHUB_ENV
+          echo "SMTP_USER=${{ secrets.SMTP_USER }}" >> $GITHUB_ENV
+          echo "SMTP_PASS=${{ secrets.SMTP_PASS }}" >> $GITHUB_ENV
+          echo "EMAIL_TO=${{ secrets.EMAIL_TO }}" >> $GITHUB_ENV
+          echo "EMAIL_FROM=${{ secrets.EMAIL_FROM }}" >> $GITHUB_ENV
+          echo "SUBJECT=Author update from Stephen Coodie" >> $GITHUB_ENV
+          echo "MESSAGE_FILE=content/scheduled/post1.md" >> $GITHUB_ENV
+      - name: Send Email (SMTP dry-run)
+        if: secrets.SMTP_HOST != ''
+        env:
+          DRY_RUN: '1'
+        run: python scripts/send_email.py
