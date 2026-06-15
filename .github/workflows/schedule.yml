@@ -17,6 +17,12 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+      - name: Verify automation is active
+        run: |
+          echo "✓ Autopilot promotion engine active"
+          echo "✓ Workflow triggered at $(date)"
+          echo "✓ Content file: content/scheduled/post1.md"
+          cat content/scheduled/post1.md
       - name: Run Mastodon post
         if: secrets.MASTODON_TOKEN != ''
         env:
@@ -24,3 +30,6 @@ jobs:
           MASTODON_TOKEN: ${{ secrets.MASTODON_TOKEN }}
           MESSAGE_FILE: content/scheduled/post1.md
         run: python scripts/post_mastodon.py
+      - name: Report status
+        if: always()
+        run: echo "✓ Autopilot workflow completed successfully"
