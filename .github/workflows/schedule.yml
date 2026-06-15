@@ -24,24 +24,3 @@ jobs:
           MASTODON_TOKEN: ${{ secrets.MASTODON_TOKEN }}
           MESSAGE_FILE: content/scheduled/post1.md
         run: python scripts/post_mastodon.py
-      - name: Prepare SMTP env
-        if: secrets.SMTP_HOST != ''
-        run: |
-          echo "SMTP_HOST=${{ secrets.SMTP_HOST }}" >> $GITHUB_ENV
-          echo "SMTP_PORT=${{ secrets.SMTP_PORT }}" >> $GITHUB_ENV
-          echo "SMTP_USER=${{ secrets.SMTP_USER }}" >> $GITHUB_ENV
-          echo "SMTP_PASS=${{ secrets.SMTP_PASS }}" >> $GITHUB_ENV
-          echo "EMAIL_TO=${{ secrets.EMAIL_TO }}" >> $GITHUB_ENV
-          echo "EMAIL_FROM=${{ secrets.EMAIL_FROM }}" >> $GITHUB_ENV
-          echo "SUBJECT=Author update from Stephen Coodie" >> $GITHUB_ENV
-          echo "MESSAGE_FILE=content/scheduled/post1.md" >> $GITHUB_ENV
-      - name: Send Email (SMTP dry-run)
-        if: secrets.SMTP_HOST != '' && secrets.REAL_SEND != 'true'
-        env:
-          DRY_RUN: '1'
-        run: python scripts/send_email.py
-      - name: Send Email (SMTP real send)
-        if: secrets.SMTP_HOST != '' && secrets.REAL_SEND == 'true'
-        env:
-          DRY_RUN: '0'
-        run: python scripts/send_email.py
